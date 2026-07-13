@@ -10,7 +10,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"labcatch/authz/zerologadapter"
+	"github.com/4Sigma/authz/zerologadapter"
 )
 
 func newTestLogger(buf *bytes.Buffer) *slog.Logger {

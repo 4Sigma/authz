@@ -10,11 +10,12 @@ import (
 	"testing"
 )
 
-// TestNoApplicationImports keeps the library application-agnostic: no file in
-// authz (or its subpackages) may import a LabCatch package, so that the
-// library can be extracted into its own module at zero cost. Only imports of
-// the library itself are allowed from the current module.
-func TestNoApplicationImports(t *testing.T) {
+// TestNoThirdPartyImports keeps the library dependency-free: the core authz
+// package may import only the standard library, so that adopting it never
+// drags dependencies into an application. The only exception is the optional
+// zerologadapter subpackage, which exists precisely to bridge zerolog and may
+// import it (applications not using zerolog never link it).
+func TestNoThirdPartyImports(t *testing.T) {
 	err := filepath.WalkDir(".", func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {
 			return err
@@ -28,13 +29,30 @@ func TestNoApplicationImports(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			if strings.HasPrefix(target, "labcatch/") && !strings.HasPrefix(target, "labcatch/authz") {
-				t.Errorf("%s imports %q: the authz library must not depend on the application", path, target)
+			if allowedImport(path, target) {
+				continue
 			}
+			t.Errorf("%s imports %q: the authz core must depend on the standard library only", path, target)
 		}
 		return nil
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func allowedImport(file, target string) bool {
+	// Standard library packages have no dot in their first path element.
+	if first, _, _ := strings.Cut(target, "/"); !strings.Contains(first, ".") {
+		return true
+	}
+	// The library may import itself (tests do).
+	if target == "github.com/4Sigma/authz" || strings.HasPrefix(target, "github.com/4Sigma/authz/") {
+		return true
+	}
+	// zerologadapter exists to bridge zerolog, so it alone may import it.
+	if strings.HasPrefix(filepath.ToSlash(file), "zerologadapter/") {
+		return strings.HasPrefix(target, "github.com/rs/zerolog")
+	}
+	return false
 }

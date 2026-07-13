@@ -19,10 +19,8 @@ What this library is **not**:
   of permissions, no roles framework. A policy is a Go function; if your
   application has roles, your policy reads them from your own user type.
 
-Requires Go ≥ 1.21 (generics with method-based inference, `log/slog`).
+Requires Go ≥ 1.23 (generics with method-based inference, `log/slog`).
 
-> The import path is currently `labcatch/authz`; it will change if/when the
-> library is extracted into its own module.
 
 ## Core concepts
 
@@ -49,7 +47,7 @@ package main
 import (
   "context"
 
-  "labcatch/authz"
+  "github.com/4Sigma/authz"
 )
 
 type User struct {
@@ -344,8 +342,8 @@ wraps a `*zerolog.Logger` as a `slog.Handler`:
 import (
   "log/slog"
 
-  "labcatch/authz"
-  "labcatch/authz/zerologadapter"
+  "github.com/4Sigma/authz"
+  "github.com/4Sigma/authz/zerologadapter"
 )
 
 engine := authz.NewEngine[string, string, *User](

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"labcatch/authz"
+	"github.com/4Sigma/authz"
 )
 
 // testUser is the subject type used across the tests, playing the role of an
